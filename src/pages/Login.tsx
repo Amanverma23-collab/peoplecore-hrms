@@ -353,7 +353,6 @@ return;
 // Device binding
 if(!profile.device_id){
 
-// first device save
 await supabase
 .from("profiles")
 .update({
@@ -361,7 +360,18 @@ device_id: currentDevice
 })
 .eq("id", profile.id);
 
+// update local role
+localStorage.setItem(
+"role",
+profile.role
+);
+
+onLogin();
+
+return;
+
 }
+
 
 else if(profile.device_id !== currentDevice){
 
