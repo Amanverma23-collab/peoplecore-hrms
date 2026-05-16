@@ -359,7 +359,18 @@ device_id:currentDevice
 })
 .eq("id",profile.id);
 
+// first login pe save hua, ab allow
+localStorage.setItem(
+"role",
+profile.role
+);
+
+onLogin();
+
+return;
+
 }
+
 
 else if(
 profile.device_id!==currentDevice
