@@ -18,7 +18,76 @@ export default function Attendance() {
   };
   useEffect(() => { fetchData(); }, [filterDate]);
 
-  const handleClockIn = async () => { const emp = employees.find(e => e.id === parseInt(form.employee_id)); if (!emp) return; await supabase.from('attendance').insert({ ...form, employee_name: emp.name, clock_in: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) }).select(); setModalOpen(false); setForm({ employee_id: '', employee_name: '', date: new Date().toISOString().split('T')[0], clock_in: '09:00', clock_out: '', status: 'Present' }); fetchData(); };
+  const handleClockIn = async () => {
+
+const OFFICE_IP="49.36.234.91";
+
+try{
+
+const res=await fetch(
+"https://api.ipify.org?format=json"
+);
+
+const data=await res.json();
+
+if(data.ip!==OFFICE_IP){
+
+alert(
+"Please connect to office Wi-Fi to mark attendance"
+);
+
+return;
+
+}
+
+}catch{
+
+alert("Unable to verify network");
+
+return;
+
+}
+
+const emp = employees.find(
+e => e.id === parseInt(form.employee_id)
+);
+
+if (!emp) return;
+
+await supabase
+.from('attendance')
+.insert({
+
+...form,
+
+employee_name: emp.name,
+
+clock_in: new Date().toLocaleTimeString(
+'en-IN',
+{
+hour:'2-digit',
+minute:'2-digit'
+})
+
+})
+.select();
+
+setModalOpen(false);
+
+setForm({
+employee_id:'',
+employee_name:'',
+date:new Date()
+.toISOString()
+.split('T')[0],
+clock_in:'09:00',
+clock_out:'',
+status:'Present'
+});
+
+fetchData();
+
+};
   const handleClockOut = async (rec: any) => { await supabase.from('attendance').update({ clock_out: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), status: 'Present' }).eq('id', rec.id).select(); fetchData(); };
 
   const presentCount = attendance.filter(a => a.status === 'Present').length;
