@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@theme {
+  --color-neu-bg: #e0e5ec;
+  --color-neu-dark: #a3b1c6;
+  --color-neu-light: #ffffff;
+  --color-neu-accent: #6c63ff;
+  --color-neu-accent2: #b362ff;
+  --color-neu-text: #2d3748;
+  --color-neu-muted: #718096;
+  --color-neu-subtle: #a0aec0;
+}
+
+body {
+  background: var(--color-neu-bg);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Neumorphic Shadows */
+.neu-raised {
+  background: var(--color-neu-bg);
+  box-shadow: 6px 6px 12px var(--color-neu-dark), -6px -6px 12px var(--color-neu-light);
+  border-radius: 16px;
+}
+
+.neu-raised-sm {
+  background: var(--color-neu-bg);
+  box-shadow: 3px 3px 6px var(--color-neu-dark), -3px -3px 6px var(--color-neu-light);
+  border-radius: 12px;
+}
+
+.neu-flat {
+  background: var(--color-neu-bg);
+  box-shadow: 2px 2px 4px var(--color-neu-dark), -2px -2px 4px var(--color-neu-light);
+  border-radius: 10px;
+}
+
+.neu-inset {
+  background: var(--color-neu-bg);
+  box-shadow: inset 4px 4px 8px var(--color-neu-dark), inset -4px -4px 8px var(--color-neu-light);
+  border-radius: 12px;
+}
+
+.neu-inset-sm {
+  background: var(--color-neu-bg);
+  box-shadow: inset 2px 2px 4px var(--color-neu-dark), inset -2px -2px 4px var(--color-neu-light);
+  border-radius: 8px;
+}
+
+.neu-btn {
+  background: var(--color-neu-bg);
+  box-shadow: 4px 4px 8px var(--color-neu-dark), -4px -4px 8px var(--color-neu-light);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  color: var(--color-neu-text);
+  font-weight: 600;
+}
+
+.neu-btn:active {
+  box-shadow: inset 3px 3px 6px var(--color-neu-dark), inset -3px -3px 6px var(--color-neu-light);
+}
+
+.neu-btn-accent {
+  background: linear-gradient(135deg, #6c63ff, #b362ff);
+  box-shadow: 4px 4px 8px var(--color-neu-dark), -4px -4px 8px var(--color-neu-light);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  color: white;
+  font-weight: 600;
+}
+
+.neu-btn-accent:active {
+  box-shadow: inset 3px 3px 6px rgba(108,99,255,0.4), inset -3px -3px 6px rgba(179,98,255,0.4);
+}
+
+.neu-sidebar {
+  background: var(--color-neu-bg);
+  box-shadow: 4px 0 12px var(--color-neu-dark), -2px 0 6px var(--color-neu-light);
+}
+
+.neu-input {
+  background: var(--color-neu-bg);
+  box-shadow: inset 3px 3px 6px var(--color-neu-dark), inset -3px -3px 6px var(--color-neu-light);
+  border-radius: 10px;
+  border: none;
+  color: var(--color-neu-text);
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.neu-input:focus {
+  box-shadow: inset 4px 4px 8px var(--color-neu-dark), inset -4px -4px 8px var(--color-neu-light), 0 0 0 2px rgba(108,99,255,0.3);
+}
+
+.neu-input::placeholder {
+  color: var(--color-neu-subtle);
+}
+
+.neu-badge {
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.neu-avatar {
+  background: linear-gradient(135deg, #6c63ff, #b362ff);
+  box-shadow: 3px 3px 6px var(--color-neu-dark), -3px -3px 6px var(--color-neu-light);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-neu-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-neu-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-neu-muted); }
+
+/* Select styling */
+select.neu-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}

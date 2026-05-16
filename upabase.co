@@ -1,0 +1,6 @@
+[35m.env.example[m[36m:[m[1;31mVITE_SUPABASE[m_URL=your_supabase_project_url
+[35m.env.example[m[36m:[m[1;31mVITE_SUPABASE[m_ANON_KEY=your_supabase_anon_key
+[35msrc/lib/supabase.ts[m[36m:[m  import.meta.env.[1;31mVITE_SUPABASE[m_URL,
+[35msrc/lib/supabase.ts[m[36m:[m  import.meta.env.[1;31mVITE_SUPABASE[m_ANON_KEY
+[35mvercel.json[m[36m:[m    "[1;31mVITE_SUPABASE[m_URL": "https://wxvjmueiusufgpltjecg.supabase.co",
+[35mvercel.json[m[36m:[m    "[1;31mVITE_SUPABASE[m_ANON_KEY": "sb_publishable_W8Ph3AFlr9XFlRQnE8LKtQ_f6cjNDGD",
