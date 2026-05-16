@@ -350,31 +350,20 @@ setError("Profile not found");
 return;
 }
 
+// Device binding
 if(!profile.device_id){
 
+// first device save
 await supabase
 .from("profiles")
 .update({
-device_id:currentDevice
+device_id: currentDevice
 })
-.eq("id",profile.id);
-
-// first login pe save hua, ab allow
-localStorage.setItem(
-"role",
-profile.role
-);
-
-onLogin();
-
-return;
+.eq("id", profile.id);
 
 }
 
-
-else if(
-profile.device_id!==currentDevice
-){
+else if(profile.device_id !== currentDevice){
 
 await supabase.auth.signOut();
 
@@ -383,22 +372,12 @@ setError(
 );
 
 return;
-
 }
 
-/*
-if(profile.role!==role){
-
-await supabase.auth.signOut();
-
-setError("Invalid credentials");
-return;
-
-}
-*/
-if (
- !profile?.role ||
- profile.role.toLowerCase().trim() !== role.toLowerCase().trim()
+// Role validation
+if(
+!profile.role ||
+profile.role.toLowerCase().trim() !== role.toLowerCase().trim()
 ){
 
 await supabase.auth.signOut();
