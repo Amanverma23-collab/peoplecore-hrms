@@ -10,8 +10,8 @@ export default function Attendance() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
-  const [form, setForm] = useState({ employee_id: '', employee_name: '', date: new Date().toISOString().split('T')[0], clock_in: '09:00', clock_out: '', status: 'Present' });
+  const [filterDate, setFilterDate] = useState(new Date().toLocaleDateString('en-CA'));
+  const [form, setForm] = useState({ employee_id: '', employee_name: '', date:new Date().toLocaleDateString('en-CA'), clock_in: '09:00', clock_out: '', status: 'Present' });
 
   const fetchData = async () => {
     try { const [attRes, empRes] = await Promise.all([supabase.from('attendance').select('*').eq('date', filterDate).order('id', { ascending: true }), supabase.from('employees').select('*').eq('status', 'Active')]); setAttendance(attRes.data || []); setEmployees(empRes.data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
@@ -77,9 +77,7 @@ setModalOpen(false);
 setForm({
 employee_id:'',
 employee_name:'',
-date:new Date()
-.toISOString()
-.split('T')[0],
+date:new Date().toLocaleDateString('en-CA'),
 clock_in:'09:00',
 clock_out:'',
 status:'Present'

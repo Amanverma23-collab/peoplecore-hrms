@@ -1,14 +1,16 @@
+import { useState, useEffect } from "react";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
+import supabase from "../lib/supabase";
 
-import supabase from "../lib/supabase";import { useState, useEffect } from "react";
 import {
-  UserCog,
-  Shield,
-  Briefcase,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight
+UserCog,
+Shield,
+Briefcase,
+Mail,
+Lock,
+Eye,
+EyeOff,
+ArrowRight
 } from "lucide-react";
 
 export default function Login({ onLogin }: { onLogin: () => void }) {
@@ -314,6 +316,11 @@ text-red-500">
 onClick={async()=>{
 
 setError("");
+const fp = await FingerprintJS.load();
+
+const result = await fp.get();
+
+const currentDevice = result.visitorId;
 
 if(email.trim()==="" || password.trim()===""){
 setError("Please enter both email and password");
@@ -341,6 +348,31 @@ await supabase
 if(!profile){
 setError("Profile not found");
 return;
+}
+
+if(!profile.device_id){
+
+await supabase
+.from("profiles")
+.update({
+device_id:currentDevice
+})
+.eq("id",profile.id);
+
+}
+
+else if(
+profile.device_id!==currentDevice
+){
+
+await supabase.auth.signOut();
+
+setError(
+"This device is not verified. Contact HR"
+);
+
+return;
+
 }
 
 /*
