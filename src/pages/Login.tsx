@@ -321,6 +321,7 @@ const fp = await FingerprintJS.load();
 const result = await fp.get();
 
 const currentDevice = result.visitorId;
+const DEVICE_BINDING = false;
 
 if(email.trim()==="" || password.trim()===""){
 setError("Please enter both email and password");
@@ -351,7 +352,10 @@ return;
 }
 
 // Device binding
-if(!profile.device_id){
+if(
+DEVICE_BINDING &&
+!profile.device_id
+){
 
 await supabase
 .from("profiles")
@@ -373,7 +377,10 @@ return;
 }
 
 
-else if(profile.device_id !== currentDevice){
+else if(
+DEVICE_BINDING &&
+profile.device_id !== currentDevice
+){
 
 await supabase.auth.signOut();
 
