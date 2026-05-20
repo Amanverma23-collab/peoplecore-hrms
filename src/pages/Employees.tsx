@@ -5,6 +5,8 @@ import { Plus, Search, Edit2, Trash2, Eye, Building2, Calendar } from 'lucide-re
 import supabase from '../lib/supabase';
 import Modal from '../components/Modal';
 import jsPDF from "jspdf";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const deptOptions = ['Engineering', 'Marketing', 'HR', 'Finance', 'Sales', 'Operations', 'Design', 'Product'];
 const statusOptions = ['Active', 'On Leave', 'Probation', 'Inactive'];
@@ -57,6 +59,7 @@ salary:""
 });
   const [editing, setEditing] = useState(false);
 const [activeTab,setActiveTab]=useState("basic");
+const [downloadOpen,setDownloadOpen]=useState(false);
   const fetchEmployees = async () => {
     try {
       let query = supabase.from('employees').select('*').order('id', { ascending: true });
@@ -68,7 +71,11 @@ const [activeTab,setActiveTab]=useState("basic");
   };
   useEffect(() => { fetchEmployees(); }, [search, filterDept, filterStatus]);
 
-  const downloadPDF=()=>{
+  const downloadPDF=(emp:any)=>{
+
+if(!emp) return;
+
+
 
 const pdf=new jsPDF();
 
@@ -76,10 +83,10 @@ pdf.setFontSize(18);
 
 pdf.text("Employee Details",20,20);
 
-if(form.photo_url){
+if(emp.photo_url){
 
 pdf.addImage(
-form.photo_url,
+emp.photo_url,
 "JPEG",
 150,
 20,
@@ -88,67 +95,253 @@ form.photo_url,
 );
 
 }
+
 pdf.setFontSize(12);
 
-pdf.text(`Employee Code: ${form.employee_code}`,20,40);
+pdf.text(`Employee Code: ${emp.employee_code || "-"}`,20,40);
 
-pdf.text(`Name: ${form.name}`,20,50);
+pdf.text(`Name: ${emp.name || "-"}`,20,50);
 
-pdf.text(`Father Name: ${form.father_name}`,20,60);
+pdf.text(`Father Name: ${emp.father_name || "-"}`,20,60);
 
-pdf.text(`Gender: ${form.gender}`,20,70);
+pdf.text(`Gender: ${emp.gender || "-"}`,20,70);
 
-pdf.text(`DOB: ${form.dob}`,20,80);
+pdf.text(`DOB: ${emp.dob || "-"}`,20,80);
 
-pdf.text(`Mobile: ${form.phone}`,20,90);
+pdf.text(`Mobile: ${emp.phone || "-"}`,20,90);
 
-pdf.text(`Email: ${form.email}`,20,100);
+pdf.text(`Email: ${emp.email || "-"}`,20,100);
 
-pdf.text(`Marital Status: ${form.marital_status}`,20,110);
+pdf.text(`Marital Status: ${emp.marital_status || "-"}`,20,110);
 
-pdf.text(`Blood Group: ${form.blood_group}`,20,120);
+pdf.text(`Blood Group: ${emp.blood_group || "-"}`,20,120);
 
+pdf.text(`Joining: ${emp.join_date || "-"}`,20,140);
 
-pdf.text("Company Details",20,140);
+pdf.text(`Department: ${emp.department || "-"}`,20,150);
 
-pdf.text(`Joining: ${form.join_date}`,20,150);
+pdf.text(`Designation: ${emp.position || "-"}`,20,160);
 
-pdf.text(`Department: ${form.department}`,20,160);
+pdf.text(`Manager: ${emp.reporting_manager || "-"}`,20,170);
 
-pdf.text(`Designation: ${form.position}`,20,170);
-
-pdf.text(`Manager: ${form.reporting_manager}`,20,180);
-
-pdf.text(`Location: ${form.work_location}`,20,190);
-
-pdf.text(`Employment: ${form.employment_type}`,20,200);
-
-pdf.text(`Employee Status: ${form.status}`,20,210);
-
-pdf.text(`UAN: ${form.uan_number}`,20,220);
-
+pdf.text(`Location: ${emp.work_location || "-"}`,20,180);
 
 pdf.addPage();
 
 pdf.text("Exit Management",20,20);
 
-pdf.text(`Resignation: ${form.resignation_date}`,20,40);
+pdf.text(`Resignation: ${emp.resignation_date || "-"}`,20,40);
 
-pdf.text(`Last Working Day: ${form.last_working_day}`,20,50);
+pdf.text(`Last Working Day: ${emp.last_working_day || "-"}`,20,50);
 
-pdf.text(`Notice: ${form.notice_period}`,20,60);
+pdf.text(`Notice: ${emp.notice_period || "-"}`,20,60);
 
-pdf.text(`FNF: ${form.fnf_status}`,20,70);
+pdf.text(`FNF: ${emp.fnf_status || "-"}`,20,70);
 
-pdf.text(`Reason: ${form.exit_reason}`,20,80);
+pdf.text(`Reason: ${emp.exit_reason || "-"}`,20,80);
 
-pdf.save(`${form.name}_details.pdf`);
+pdf.save(`${emp.name}_details.pdf`);
+
+}
+
+const downloadExcel=(emp:any)=>{
+
+const data=[{
+
+"Employee Code":emp.employee_code || "-",
+"Name":emp.name || "-",
+"Father Name":emp.father_name || "-",
+"Gender":emp.gender || "-",
+"DOB":emp.dob || "-",
+
+"Phone":emp.phone || "-",
+"Email":emp.email || "-",
+"Marital Status":emp.marital_status || "-",
+"Blood Group":emp.blood_group || "-",
+
+"Join Date":emp.join_date || "-",
+"Department":emp.department || "-",
+"Designation":emp.position || "-",
+"Reporting Manager":emp.reporting_manager || "-",
+"Work Location":emp.work_location || "-",
+"Employment Type":emp.employment_type || "-",
+
+"Status":emp.status || "-",
+"UAN Number":emp.uan_number || "-",
+"PF":emp.pf_applicable || "-",
+"ESIC":emp.esic_applicable || "-",
+"PT":emp.pt_applicable || "-",
+"LWF":emp.lwf_applicable || "-",
+
+"Resignation Date":emp.resignation_date || "-",
+"Last Working Day":emp.last_working_day || "-",
+"Notice Period":emp.notice_period || "-",
+"FNF":emp.fnf_status || "-",
+"Exit Reason":emp.exit_reason || "-"
+
+}];
+
+const ws=XLSX.utils.json_to_sheet(data);
+
+const wb=XLSX.utils.book_new();
+
+XLSX.utils.book_append_sheet(
+wb,
+ws,
+"Employee"
+);
+
+const excelBuffer=XLSX.write(
+wb,
+{
+bookType:"xlsx",
+type:"array"
+}
+);
+
+const file=new Blob([excelBuffer]);
+
+saveAs(
+file,
+`${emp.name}_details.xlsx`
+);
+
+}
+
+const downloadAllEmployees=()=>{
+
+const data=employees.map(emp=>({
+
+"Employee Code":emp.employee_code || "-",
+"Name":emp.name || "-",
+"Father Name":emp.father_name || "-",
+"Gender":emp.gender || "-",
+"DOB":emp.dob || "-",
+
+"Phone":emp.phone || "-",
+"Email":emp.email || "-",
+"Marital Status":emp.marital_status || "-",
+"Blood Group":emp.blood_group || "-",
+
+"Join Date":emp.join_date || "-",
+"Department":emp.department || "-",
+"Designation":emp.position || "-",
+"Reporting Manager":emp.reporting_manager || "-",
+"Work Location":emp.work_location || "-",
+"Employment Type":emp.employment_type || "-",
+
+"Status":emp.status || "-",
+"UAN Number":emp.uan_number || "-",
+
+"PF":emp.pf_applicable || "-",
+"ESIC":emp.esic_applicable || "-",
+"PT":emp.pt_applicable || "-",
+"LWF":emp.lwf_applicable || "-",
+
+"Resignation Date":emp.resignation_date || "-",
+"Last Working Day":emp.last_working_day || "-",
+"Notice Period":emp.notice_period || "-",
+"FNF":emp.fnf_status || "-",
+"Exit Reason":emp.exit_reason || "-"
+
+}));
+
+const ws=XLSX.utils.json_to_sheet(data);
+
+const wb=XLSX.utils.book_new();
+
+XLSX.utils.book_append_sheet(
+wb,
+ws,
+"Employees"
+);
+
+const excelBuffer=XLSX.write(
+wb,
+{
+bookType:"xlsx",
+type:"array"
+}
+);
+
+const file=new Blob([excelBuffer]);
+
+saveAs(
+file,
+"all_employees.xlsx"
+);
 
 }
   const handleSubmit = async () => {
-    const payload = { ...form, salary: parseFloat(form.salary) || 0 };
-    if (editing && selected) { await supabase.from('employees').update(payload).eq('id', selected.id).select(); }
-    else { await supabase.from('employees').insert(payload).select(); }
+   const payload = {
+
+employee_code:form.employee_code,
+name:form.name,
+father_name:form.father_name,
+gender:form.gender,
+
+dob: form.dob || null,
+
+phone:form.phone,
+email:form.email,
+marital_status:form.marital_status,
+blood_group:form.blood_group,
+photo_url:form.photo_url,
+
+join_date: form.join_date || null,
+
+department:form.department,
+position:form.position,
+reporting_manager:form.reporting_manager,
+work_location:form.work_location,
+employment_type:form.employment_type,
+status:form.status,
+
+uan_number:form.uan_number,
+pf_applicable:form.pf_applicable,
+esic_applicable:form.esic_applicable,
+pt_applicable:form.pt_applicable,
+lwf_applicable:form.lwf_applicable,
+
+resignation_date: form.resignation_date || null,
+
+last_working_day: form.last_working_day || null,
+
+notice_period:form.notice_period,
+fnf_status:form.fnf_status,
+exit_reason:form.exit_reason,
+
+salary:parseFloat(form.salary)||0
+
+};
+  let result;
+
+if(editing && selected){
+
+result = await supabase
+.from('employees')
+.update(payload)
+.eq('id',selected.id)
+.select();
+
+}else{
+
+result = await supabase
+.from('employees')
+.insert([payload])
+.select();
+
+}
+
+if(result.error){
+
+console.log(result.error);
+
+alert(result.error.message);
+
+return;
+
+}
   setModalOpen(false);
 setEditing(false);
 setSelected(null);
@@ -276,6 +469,17 @@ className="neu-input w-full pr-4"
           </div>
         </div>
       ))}{employees.length === 0 && <p className="text-neu-subtle text-center py-10">No employees found</p>}</div>
+   <div className="flex justify-end mt-6">
+
+<button
+onClick={downloadAllEmployees}
+className="neu-btn-accent px-6 py-3">
+
+Download All Employees
+
+</button>
+
+</div>
 
     <Modal
 open={modalOpen}
@@ -927,21 +1131,257 @@ className="neu-input w-full h-28"
 )}
 <div className="flex justify-between mt-6">
 
+<div className="relative">
+
 <button
-onClick={downloadPDF}
-className="neu-btn px-4 py-2">
-
-Download PDF
-
+onClick={()=>setDownloadOpen(!downloadOpen)}
+className="neu-btn px-4 py-2"
+>
+Download
 </button>
+
+{downloadOpen && (
+
+<div className="absolute top-14 left-0 z-50 neu-raised p-2 rounded-xl w-44 space-y-2">
+
+<button
+onClick={()=>downloadPDF(form)}
+className="neu-btn w-full"
+>
+📄 Download PDF
+</button>
+
+<button
+onClick={()=>downloadExcel(form)}
+className="neu-btn w-full"
+>
+📊 Download Excel
+</button>
+
+</div>
+
+)}
+
+</div>
 
 </div>
         <div className="flex justify-end gap-3 mt-6"><button onClick={() => setModalOpen(false)} className="neu-btn px-4 py-2 text-sm">Cancel</button><button onClick={handleSubmit} className="neu-btn-accent px-4 py-2 text-sm">{editing ? 'Update' : 'Add Employee'}</button></div>
       </Modal>
 
       <Modal open={viewModal} onClose={() => setViewModal(false)} title="Employee Details">
-        {selected && (<div className="space-y-4"><div className="flex items-center gap-4 pb-4" style={{boxShadow: '0 4px 6px #a3b1c6, 0 -2px 4px #ffffff'}}><div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full neu-avatar flex items-center justify-center text-white text-xl sm:text-2xl font-bold">{selected.name?.charAt(0)}</div><div><h3 className="text-lg sm:text-xl font-bold text-neu-text">{selected.name}</h3><p className="text-sm text-neu-muted">{selected.position} · {selected.department}</p></div></div>
-        <div className="grid grid-cols-2 gap-3"><div className="neu-inset-sm p-3"><p className="text-xs text-neu-subtle">Email</p><p className="text-sm text-neu-text break-all">{selected.email}</p></div><div className="neu-inset-sm p-3"><p className="text-xs text-neu-subtle">Phone</p><p className="text-sm text-neu-text">{selected.phone || '-'}</p></div><div className="neu-inset-sm p-3"><p className="text-xs text-neu-subtle">Salary</p><p className="text-sm text-neu-text">₹{Number(selected.salary).toLocaleString('en-IN')}</p></div><div className="neu-inset-sm p-3"><p className="text-xs text-neu-subtle">Join Date</p><p className="text-sm text-neu-text">{selected.join_date || '-'}</p></div><div className="neu-inset-sm p-3"><p className="text-xs text-neu-subtle">Status</p><p className="text-sm text-neu-text">{selected.status}</p></div></div></div>)}
+        {selected && (
+
+<div className="space-y-5">
+
+<div
+className="flex items-center gap-4 pb-4"
+style={{
+boxShadow:'0 4px 6px #a3b1c6,0 -2px 4px #ffffff'
+}}
+>
+
+<div
+className="w-16 h-16 overflow-visible rounded-full relative group cursor-pointer"
+>
+
+{selected.photo_url ? (
+
+<img
+src={selected.photo_url}
+alt="employee"
+className="
+w-full h-full object-cover rounded-full
+transition-all duration-500
+group-hover:scale-[3]
+group-hover:absolute
+group-hover:z-50
+group-hover:top-6
+group-hover:left-10
+shadow-2xl
+"
+/>
+
+) : (
+
+<div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold">
+
+{selected.name?.charAt(0)}
+
+</div>
+
+)}
+
+</div>
+<div>
+<h3 className="text-xl font-bold">
+{selected.name}
+</h3>
+
+<p className="text-neu-muted">
+{selected.position} • {selected.department}
+</p>
+
+</div>
+
+</div>
+
+
+<h3 className="font-bold text-lg">
+Basic Details
+</h3>
+
+<div className="grid grid-cols-2 gap-3">
+
+<div className="neu-inset-sm p-3">
+<p>Employee Code</p>
+<b>{selected.employee_code||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Father Name</p>
+<b>{selected.father_name||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Gender</p>
+<b>{selected.gender||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>DOB</p>
+<b>{selected.dob||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Phone</p>
+<b>{selected.phone||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Email</p>
+<b>{selected.email||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Marital Status</p>
+<b>{selected.marital_status||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Blood Group</p>
+<b>{selected.blood_group||"-"}</b>
+</div>
+
+</div>
+
+
+<h3 className="font-bold text-lg">
+Company Details
+</h3>
+
+<div className="grid grid-cols-2 gap-3">
+
+<div className="neu-inset-sm p-3">
+<p>Joining Date</p>
+<b>{selected.join_date||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Reporting Manager</p>
+<b>{selected.reporting_manager||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Location</p>
+<b>{selected.work_location||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Employment</p>
+<b>{selected.employment_type||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>UAN</p>
+<b>{selected.uan_number||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Status</p>
+<b>{selected.status||"-"}</b>
+</div>
+
+</div>
+
+
+<h3 className="font-bold text-lg">
+Exit Management
+</h3>
+
+<div className="grid grid-cols-2 gap-3">
+
+<div className="neu-inset-sm p-3">
+<p>Resignation Date</p>
+<b>{selected.resignation_date||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Last Working Day</p>
+<b>{selected.last_working_day||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>Notice Period</p>
+<b>{selected.notice_period||"-"}</b>
+</div>
+
+<div className="neu-inset-sm p-3">
+<p>FNF Status</p>
+<b>{selected.fnf_status||"-"}</b>
+</div>
+
+</div>
+
+<div className="flex justify-start mt-4">
+
+<div className="relative">
+
+<button
+onClick={()=>setDownloadOpen(!downloadOpen)}
+className="neu-btn-accent px-4 py-2"
+>
+Download
+</button>
+
+{downloadOpen && (
+
+<div className="absolute top-14 left-0 z-50 neu-raised p-2 rounded-xl w-44 space-y-2">
+
+<button
+onClick={()=>downloadPDF(selected)}
+className="neu-btn w-full"
+>
+📄 Download PDF
+</button>
+
+<button
+onClick={()=>downloadExcel(selected)}
+className="neu-btn w-full"
+>
+📊 Download Excel
+</button>
+
+</div>
+
+)}
+
+</div>
+
+</div>
+
+</div>
+
+)}
       </Modal>
     </div>
   );
