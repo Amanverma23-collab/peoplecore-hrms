@@ -13,6 +13,10 @@ const statusOptions = ['Active', 'On Leave', 'Probation', 'Inactive'];
 const statusColor = (s: string) => s === 'Active' ? 'bg-green-100 text-green-600' : s === 'On Leave' ? 'bg-amber-100 text-amber-600' : s === 'Probation' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600';
 
 export default function Employees() {
+ 
+  
+  const companyId = localStorage.getItem("company_id");
+
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -62,7 +66,12 @@ const [activeTab,setActiveTab]=useState("basic");
 const [downloadOpen,setDownloadOpen]=useState(false);
   const fetchEmployees = async () => {
     try {
-      let query = supabase.from('employees').select('*').order('id', { ascending: true });
+let query = supabase
+  .from('employees')
+  .select('*')
+  .eq('company_id', companyId)
+  .order('id', { ascending: true });
+
       if (filterDept !== 'All') query = query.eq('department', filterDept);
       if (filterStatus !== 'All') query = query.eq('status', filterStatus);
       if (search) query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,position.ilike.%${search}%`);
@@ -274,7 +283,7 @@ file,
 }
   const handleSubmit = async () => {
    const payload = {
-
+company_id: companyId,
 employee_code:form.employee_code,
 name:form.name,
 father_name:form.father_name,
@@ -1385,4 +1394,4 @@ className="neu-btn w-full"
       </Modal>
     </div>
   );
-}
+} 

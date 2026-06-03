@@ -346,6 +346,10 @@ await supabase
 .eq("id",data.user.id)
 .single();
 
+console.log("PROFILE", profile);
+console.log("COMPANY ID =", profile.company_id);
+console.log("SELECTED ROLE", role);
+
 if(!profile){
 setError("Profile not found");
 return;
@@ -366,8 +370,13 @@ device_id: currentDevice
 
 // update local role
 localStorage.setItem(
-"role",
-profile.role
+  "role",
+  profile.role
+);
+
+localStorage.setItem(
+  "company_id",
+  profile.company_id
 );
 
 onLogin();
@@ -391,6 +400,8 @@ setError(
 return;
 }
 
+console.log("PROFILE", profile);
+console.log("COMPANY ID", profile.company_id);
 // Role validation
 if(
 !profile.role ||
