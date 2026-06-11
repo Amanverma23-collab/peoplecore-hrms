@@ -14,37 +14,80 @@ export default function Attendance() {
   const [form, setForm] = useState({ employee_id: '', employee_name: '', date:new Date().toLocaleDateString('en-CA'), clock_in: '09:00', clock_out: '', status: 'Present' });
 
   const fetchData = async () => {
-    try { const [attRes, empRes] = await Promise.all([supabase.from('attendance').select('*').eq('date', filterDate).order('id', { ascending: true }), supabase.from('employees').select('*').eq('status', 'Active')]); setAttendance(attRes.data || []); setEmployees(empRes.data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
+    const companyId = localStorage.getItem("company_id");
+
+console.log(
+  "ATTENDANCE COMPANY ID",
+  companyId
+);
+    try { const [attRes, empRes] = await Promise.all([
+  supabase
+    .from('attendance')
+    .select('*')
+    .eq('company_id', companyId)
+    .eq('date', filterDate)
+    .order('id', { ascending: true }),
+
+  supabase
+    .from('employees')
+    .select('*')
+    .eq('company_id', companyId)
+    .eq('status', 'Active')
+]); setAttendance(attRes.data || []); setEmployees(empRes.data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
   };
   useEffect(() => { fetchData(); }, [filterDate]);
+  const companyId = localStorage.getItem("company_id");
 
   const handleClockIn = async () => {
 
-const OFFICE_IP="49.36.234.91";
+const { data: settings } = await supabase
+  .from("company_settings")
+  .select("wifi_attendance_enabled")
+  .eq("company_id", companyId)
+  .single();
+  
+  if (settings?.wifi_attendance_enabled) {
 
-try{
+  try {
 
-const res=await fetch(
-"https://api.ipify.org?format=json"
+    const ipRes = await fetch(
+      "https://api.ipify.org?format=json"
+    );
+
+    const ipData = await ipRes.json();
+
+    const currentIp = ipData.ip;
+
+    const { data: allowedIps } =
+      await supabase
+        .from("company_wifi_ips")
+        .select("ip_address")
+        .eq("company_id", companyId);
+
+    const matched = allowedIps?.some(
+  (item: any) =>
+    item.ip_address === currentIp
 );
 
-const data=await res.json();
+    if (!matched) {
 
-if(data.ip!==OFFICE_IP){
+      alert(
+        "Connect to office WiFi before marking attendance"
+      );
 
-alert(
-"Please connect to office Wi-Fi to mark attendance"
-);
+      return;
 
-return;
+    }
 
-}
+  } catch {
 
-}catch{
+    alert(
+      "Unable to verify network"
+    );
 
-alert("Unable to verify network");
+    return;
 
-return;
+  }
 
 }
 
@@ -59,6 +102,8 @@ await supabase
 .insert({
 
 ...form,
+
+company_id: companyId,
 
 employee_name: emp.name,
 

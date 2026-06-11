@@ -17,12 +17,34 @@ export default function Payroll() {
   const [form, setForm] = useState({ employee_id: '', employee_name: '', month: new Date().getMonth() + 1, year: new Date().getFullYear(), basic: 0, hra: 0, da: 0, deductions: 0, net_salary: 0, status: 'Pending' });
 
   const fetchData = async () => {
-    try { const [payRes, empRes] = await Promise.all([supabase.from('payroll').select('*').eq('month', filterMonth).eq('year', filterYear).order('id', { ascending: false }), supabase.from('employees').select('*').eq('status', 'Active')]); setPayroll(payRes.data || []); setEmployees(empRes.data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
+    const companyId = localStorage.getItem("company_id");
+    try { const [payRes, empRes] = await Promise.all([supabase
+.from('payroll')
+.select('*')
+.eq('company_id', companyId)
+.eq('month', filterMonth)
+.eq('year', filterYear),
+
+supabase
+.from('employees')
+.select('*')
+.eq('company_id', companyId)
+.eq('status', 'Active')]); setPayroll(payRes.data || []); setEmployees(empRes.data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
   };
   useEffect(() => { fetchData(); }, [filterMonth, filterYear]);
 
   const calcNet = () => form.basic + form.hra + form.da - form.deductions;
-  const handleSubmit = async () => { const emp = employees.find(e => e.id === parseInt(form.employee_id)); if (!emp) return; await supabase.from('payroll').insert({ ...form, employee_name: emp.name, net_salary: calcNet() }).select(); setModalOpen(false); setForm({ employee_id: '', employee_name: '', month: new Date().getMonth() + 1, year: new Date().getFullYear(), basic: 0, hra: 0, da: 0, deductions: 0, net_salary: 0, status: 'Pending' }); fetchData(); };
+  const handleSubmit = async () => { const companyId = localStorage.getItem("company_id"); const emp = employees.find(e => e.id === parseInt(form.employee_id)); if (!emp) return; await supabase
+.from('payroll')
+.insert({
+  ...form,
+
+  company_id: companyId,
+
+  employee_name: emp.name,
+
+  net_salary: calcNet()
+}) .select(); setModalOpen(false); setForm({ employee_id: '', employee_name: '', month: new Date().getMonth() + 1, year: new Date().getFullYear(), basic: 0, hra: 0, da: 0, deductions: 0, net_salary: 0, status: 'Pending' }); fetchData(); };
   const handleProcess = async (id: number) => { await supabase.from('payroll').update({ status: 'Processed' }).eq('id', id).select(); fetchData(); };
 
   const totalPayroll = payroll.reduce((sum, p) => sum + (parseFloat(p.net_salary) || 0), 0);

@@ -13,12 +13,24 @@ export default function Announcements() {
   const [form, setForm] = useState({ title: '', message: '', category: 'General', priority: 'Medium', created_date: new Date().toISOString().split('T')[0] });
 
   const fetchAnnouncements = async () => {
-    try { const { data, error } = await supabase.from('announcements').select('*').order('id', { ascending: false }); if (error) throw error; setAnnouncements(data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
+    const companyId = localStorage.getItem("company_id");
+    try { const { data, error } = await supabase
+  .from('announcements')
+  .select('*')
+  .eq('company_id', companyId)
+  .order('id', { ascending: false }); if (error) throw error; setAnnouncements(data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
   };
   useEffect(() => { fetchAnnouncements(); }, []);
 
   const handleSubmit = async () => {
-    await supabase.from('announcements').insert(form).select();
+    const companyId = localStorage.getItem("company_id");
+    await supabase
+  .from('announcements')
+  .insert({
+    ...form,
+    company_id: companyId
+  })
+  .select();
     setModalOpen(false); setForm({ title: '', message: '', category: 'General', priority: 'Medium', created_date: new Date().toISOString().split('T')[0] }); fetchAnnouncements();
   };
   const handleDelete = async (id: number) => { if (!confirm('Delete?')) return; await supabase.from('announcements').delete().eq('id', id); fetchAnnouncements(); };

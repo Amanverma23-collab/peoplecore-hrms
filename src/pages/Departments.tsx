@@ -14,12 +14,36 @@ export default function Departments() {
   const [form, setForm] = useState({ name: '', head: '', description: '', employee_count: 0 });
 
   const fetchDepts = async () => {
-    try { const { data, error } = await supabase.from('departments').select('*').order('id', { ascending: true }); if (error) throw error; setDepartments(data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
+    try { const { data, error } = await supabase
+  .from('departments')
+  .select('*')
+  .eq('company_id', companyId)
+  .order('id', { ascending: true });
+   if (error) throw error; setDepartments(data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
   };
+  const companyId = localStorage.getItem("company_id");
   useEffect(() => { fetchDepts(); }, []);
 
   const handleSubmit = async () => {
-    if (editing && selected) { await supabase.from('departments').update(form).eq('id', selected.id).select(); } else { await supabase.from('departments').insert(form).select(); }
+    if (editing && selected) {const companyId = localStorage.getItem("company_id");
+
+await supabase
+  .from('departments')
+  .update({
+    ...form,
+    company_id: companyId
+  })
+  .eq('id', selected.id)
+  .select();} else { const companyId = localStorage.getItem("company_id");
+
+await supabase
+  .from('departments')
+  .insert({
+    ...form,
+    company_id: companyId
+  })
+  .select();
+}
     setModalOpen(false); setEditing(false); setSelected(null); setForm({ name: '', head: '', description: '', employee_count: 0 }); fetchDepts();
   };
   const handleEdit = (dept: any) => { setSelected(dept); setForm({ name: dept.name, head: dept.head || '', description: dept.description || '', employee_count: dept.employee_count || 0 }); setEditing(true); setModalOpen(true); };

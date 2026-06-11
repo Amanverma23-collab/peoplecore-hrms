@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Users, Building2, Clock, CalendarOff, IndianRupee, TrendingUp, Briefcase, Megaphone, ChevronLeft, ChevronRight, Shield, LogOut } from 'lucide-react';
 
+
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/employees', icon: Users, label: 'Employees' },
@@ -14,13 +15,20 @@ const navItems = [
 ];
 
 export default function Sidebar({ open, onToggle, onNavClick, onLogout }: { open: boolean; onToggle: () => void; onNavClick: () => void; onLogout: () => void }) {
+  const companyName =
+localStorage.getItem("company_name");
+const shortCompanyName = companyName
+?.replace(" Pvt Ltd", "")
+?.replace(" Pvt. Ltd.", "")
+?.replace(" Private Limited", "")
+?.replace(" Ltd", "");
   return (
     <aside className={`hidden md:flex flex-col h-full bg-neu-bg neu-sidebar flex-shrink-0 transition-all duration-300 ${open ? 'w-64' : 'w-20'}`}>
       <div className="flex items-center gap-3 px-4 h-16 flex-shrink-0">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6c63ff] to-[#b362ff] flex items-center justify-center flex-shrink-0" style={{boxShadow: '3px 3px 6px #a3b1c6, -3px -3px 6px #ffffff'}}>
           <Shield className="w-5 h-5 text-white" />
         </div>
-        {open && <span className="text-lg font-bold bg-gradient-to-r from-[#6c63ff] to-[#b362ff] bg-clip-text text-transparent whitespace-nowrap">PeopleCore</span>}
+        {open && <span className="text-lg font-bold bg-gradient-to-r from-[#6c63ff] to-[#b362ff] bg-clip-text text-transparent whitespace-nowrap">{shortCompanyName || "PeopleCore"}</span>}
       </div>
       <nav className="flex-1 py-4 space-y-1.5 px-3 overflow-y-auto">
         {navItems.map(item => (

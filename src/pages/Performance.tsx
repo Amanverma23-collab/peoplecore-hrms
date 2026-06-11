@@ -11,11 +11,30 @@ export default function Performance() {
   const [form, setForm] = useState({ employee_id: '', employee_name: '', reviewer: '', rating: 3, review_period: '', comments: '', review_date: new Date().toISOString().split('T')[0] });
 
   const fetchData = async () => {
-    try { const [revRes, empRes] = await Promise.all([supabase.from('performances').select('*').order('id', { ascending: false }), supabase.from('employees').select('*').eq('status', 'Active')]); setReviews(revRes.data || []); setEmployees(empRes.data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
+    const companyId = localStorage.getItem("company_id");
+    try { const [revRes, empRes] = await Promise.all([supabase
+.from('performances')
+.select('*')
+.eq('company_id', companyId)
+.order('id', { ascending: false }),
+
+supabase
+.from('employees')
+.select('*')
+.eq('company_id', companyId)
+.eq('status', 'Active')]); setReviews(revRes.data || []); setEmployees(empRes.data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
   };
   useEffect(() => { fetchData(); }, []);
 
-  const handleSubmit = async () => { const emp = employees.find(e => e.id === parseInt(form.employee_id)); if (!emp) return; await supabase.from('performances').insert({ ...form, employee_name: emp.name }).select(); setModalOpen(false); setForm({ employee_id: '', employee_name: '', reviewer: '', rating: 3, review_period: '', comments: '', review_date: new Date().toISOString().split('T')[0] }); fetchData(); };
+  const handleSubmit = async () => { const companyId = localStorage.getItem("company_id"); const emp = employees.find(e => e.id === parseInt(form.employee_id)); if (!emp) return; await supabase
+.from('performances')
+.insert({
+  ...form,
+
+  company_id: companyId,
+
+  employee_name: emp.name
+}).select(); setModalOpen(false); setForm({ employee_id: '', employee_name: '', reviewer: '', rating: 3, review_period: '', comments: '', review_date: new Date().toISOString().split('T')[0] }); fetchData(); };
   const handleDelete = async (id: number) => { if (!confirm('Delete?')) return; await supabase.from('performances').delete().eq('id', id); fetchData(); };
 
   const renderStars = (rating: number) => (<div className="flex items-center gap-0.5">{[1, 2, 3, 4, 5].map(s => (<Star key={s} className={`w-4 h-4 ${s <= rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} />))}</div>);

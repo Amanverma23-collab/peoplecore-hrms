@@ -15,13 +15,25 @@ export default function Recruitment() {
   const [form, setForm] = useState({ title: '', department: 'Engineering', position: '', openings: 1, status: 'Open', posted_date: new Date().toISOString().split('T')[0], description: '' });
 
   const fetchJobs = async () => {
-    try { let q = supabase.from('recruitment').select('*').order('id', { ascending: false }); if (filterStatus !== 'All') q = q.eq('status', filterStatus); const { data, error } = await q; if (error) throw error; setJobs(data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
+    const companyId = localStorage.getItem("company_id");
+    try { let q = supabase
+  .from('recruitment')
+  .select('*')
+  .eq('company_id', companyId)
+  .order('id', { ascending: false }); if (filterStatus !== 'All') q = q.eq('status', filterStatus); const { data, error } = await q; if (error) throw error; setJobs(data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
   };
   useEffect(() => { fetchJobs(); }, [filterStatus]);
 
   const handleSubmit = async () => {
+    const companyId = localStorage.getItem("company_id");
     if (editing && selected) { await supabase.from('recruitment').update({ title: form.title, department: form.department, position: form.position, openings: form.openings, status: form.status, description: form.description }).eq('id', selected.id).select(); }
-    else { await supabase.from('recruitment').insert(form).select(); }
+    else { await supabase
+.from('recruitment')
+.insert({
+  ...form,
+  company_id: companyId
+})
+.select(); }
     setModalOpen(false); setEditing(false); setSelected(null); setForm({ title: '', department: 'Engineering', position: '', openings: 1, status: 'Open', posted_date: new Date().toISOString().split('T')[0], description: '' }); fetchJobs();
   };
   const handleEdit = (job: any) => { setSelected(job); setForm({ title: job.title, department: job.department, position: job.position, openings: job.openings, status: job.status, posted_date: job.posted_date, description: job.description || '' }); setEditing(true); setModalOpen(true); };

@@ -339,7 +339,7 @@ result = await supabase
 .from('employees')
 .insert([payload])
 .select();
-
+ console.log(result);
 }
 
 if(result.error){

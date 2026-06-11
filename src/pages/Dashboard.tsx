@@ -1,27 +1,64 @@
 import { useState, useEffect } from 'react';
-import { Users, Building2, Clock, CalendarOff, IndianRupee, Briefcase, AlertCircle } from 'lucide-react';
+import { Users, Building2, Clock, CalendarOff, IndianRupee, Briefcase, AlertCircle, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 import supabase from '../lib/supabase';
 import StatCard from '../components/StatCard';
-
+import CompanySettingsDrawer from '../components/CompanySettingsDrawer';
 export default function Dashboard() {
+  const companyName =
+localStorage.getItem("company_name");
   const [stats, setStats] = useState({ employees: 0, departments: 0, presentToday: 0, pendingLeaves: 0, totalPayroll: 0, openPositions: 0 });
   const [recentLeaves, setRecentLeaves] = useState<any[]>([]);
   const [recentAnnouncements, setRecentAnnouncements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [settingsOpen, setSettingsOpen] = useState(false);
   useEffect(() => {
+    const companyId = localStorage.getItem("company_id");
+console.log("DASHBOARD COMPANY", companyId);
     const fetchDashboard = async () => {
       try {
-        const [empRes, deptRes, attRes, leaveRes, payRes, recRes, annRes] = await Promise.all([
-          supabase.from('employees').select('*'),
-          supabase.from('departments').select('*'),
-          supabase.from('attendance').select('*').eq('date', new Date().toISOString().split('T')[0]),
-          supabase.from('leaves').select('*').eq('status', 'Pending'),
-          supabase.from('payroll').select('*'),
-          supabase.from('recruitment').select('*').eq('status', 'Open'),
-          supabase.from('announcements').select('*').order('id', { ascending: false }),
-        ]);
+       const [empRes, deptRes, attRes, leaveRes, payRes, recRes, annRes] = await Promise.all([
+
+  supabase
+    .from('employees')
+    .select('*')
+    .eq('company_id', companyId),
+
+  supabase
+    .from('departments')
+    .select('*')
+    .eq('company_id', companyId),
+
+  supabase
+    .from('attendance')
+    .select('*')
+    .eq('company_id', companyId)
+    .eq('date', new Date().toISOString().split('T')[0]),
+
+  supabase
+    .from('leaves')
+    .select('*')
+    .eq('company_id', companyId)
+    .eq('status', 'Pending'),
+
+  supabase
+    .from('payroll')
+    .select('*')
+    .eq('company_id', companyId),
+
+  supabase
+    .from('recruitment')
+    .select('*')
+    .eq('company_id', companyId)
+    .eq('status', 'Open'),
+
+  supabase
+    .from('announcements')
+    .select('*')
+    .eq('company_id', companyId)
+    .order('id', { ascending: false }),
+
+]);
         const employees = empRes.data || [];
         const departments = deptRes.data || [];
         const attendance = attRes.data || [];
@@ -50,9 +87,32 @@ export default function Dashboard() {
     { title: 'Open Positions', value: stats.openPositions, icon: <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" />, color: 'bg-rose-100' },
   ];
 
-  return (
+return (
+  <>
     <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
-      <div><h1 className="text-xl sm:text-2xl font-bold text-neu-text">Dashboard</h1><p className="text-neu-muted text-xs sm:text-sm mt-1">Welcome back! Here's your HR overview.</p></div>
+
+      <div className="flex items-start justify-between gap-4">
+
+  <div>
+    <h1 className="text-xl sm:text-2xl font-bold text-neu-text">
+      {companyName}
+    </h1>
+
+    <p className="text-neu-muted text-xs sm:text-sm mt-1">
+      Welcome back! Here's your HR overview.
+    </p>
+  </div>
+
+  <button
+    onClick={() => setSettingsOpen(true)}
+    
+    className="neu-btn p-3 rounded-xl cursor-pointer"
+  >
+    <Settings className="w-5 h-5" />
+
+  </button>
+
+</div>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {statCards.map((card, i) => (<StatCard key={card.title} {...card} index={i} />))}
       </div>
@@ -80,8 +140,17 @@ export default function Dashboard() {
               </div>
             ))}</div>
           )}
-        </div>
+              </div>
       </div>
+
+      <CompanySettingsDrawer
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+      />
+
     </div>
-  );
+
+  </>
+);
 }
+  

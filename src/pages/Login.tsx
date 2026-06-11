@@ -321,7 +321,7 @@ const fp = await FingerprintJS.load();
 const result = await fp.get();
 
 const currentDevice = result.visitorId;
-const DEVICE_BINDING = false;
+
 
 if(email.trim()==="" || password.trim()===""){
 setError("Please enter both email and password");
@@ -346,6 +346,20 @@ await supabase
 .eq("id",data.user.id)
 .single();
 
+const { data: companySettings } =
+await supabase
+  .from("company_settings")
+  .select("device_binding_enabled")
+  .eq("company_id", profile.company_id)
+  .single();
+
+const DEVICE_BINDING =
+  companySettings?.device_binding_enabled || false;
+
+console.log(
+  "DEVICE BINDING =",
+  DEVICE_BINDING
+);
 console.log("PROFILE", profile);
 console.log("COMPANY ID =", profile.company_id);
 console.log("SELECTED ROLE", role);
@@ -377,6 +391,11 @@ localStorage.setItem(
 localStorage.setItem(
   "company_id",
   profile.company_id
+);
+
+console.log(
+  "AFTER SAVE",
+  localStorage.getItem("company_id")
 );
 
 onLogin();
@@ -416,12 +435,32 @@ return;
 }
 
 localStorage.setItem(
-"role",
-profile.role
+  "role",
+  profile.role
+);
+
+localStorage.setItem(
+  "company_id",
+  profile.company_id || ""
+);
+
+const { data: company } = await supabase
+  .from("companies")
+  .select("company_name")
+  .eq("id", profile.company_id)
+  .single();
+
+localStorage.setItem(
+  "company_name",
+  company?.company_name || ""
+);
+
+console.log(
+  "AFTER SAVE",
+  localStorage.getItem("company_id")
 );
 
 onLogin();
-
 }}
 
 className={`

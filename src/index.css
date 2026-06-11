@@ -125,3 +125,10 @@ select.neu-input {
   background-position: right 12px center;
   padding-right: 32px;
 }
+button {
+  cursor: pointer;
+}
+
+a {
+  cursor: pointer;
+}

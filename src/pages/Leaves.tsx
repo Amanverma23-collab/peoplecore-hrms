@@ -15,12 +15,31 @@ export default function Leaves() {
   const [form, setForm] = useState({ employee_id: '', employee_name: '', leave_type: 'Casual Leave', start_date: '', end_date: '', days: 1, reason: '', status: 'Pending', applied_date: new Date().toISOString().split('T')[0] });
 
   const fetchData = async () => {
-    try { let q = supabase.from('leaves').select('*').order('id', { ascending: false }); if (filterStatus !== 'All') q = q.eq('status', filterStatus); const [leaveRes, empRes] = await Promise.all([q, supabase.from('employees').select('*').eq('status', 'Active')]); setLeaves(leaveRes.data || []); setEmployees(empRes.data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
+    try { const companyId = localStorage.getItem("company_id");
+
+let q = supabase
+.from('leaves')
+.select('*')
+.eq('company_id', companyId)
+.order('id', { ascending: false });
+
+if (filterStatus !== 'All') {
+  q = q.eq('status', filterStatus);
+}
+
+const [leaveRes, empRes] = await Promise.all([
+  q,
+  supabase
+    .from('employees')
+    .select('*')
+    .eq('company_id', companyId)
+]);
+  setLeaves(leaveRes.data || []); setEmployees(empRes.data || []); } catch (err) { console.error(err); } finally { setLoading(false); }
   };
   useEffect(() => { fetchData(); }, [filterStatus]);
 
   const handleSubmit = async () => {
-
+const companyId = localStorage.getItem("company_id");
 const emp = employees.find(
 e => e.id === parseInt(form.employee_id)
 );
@@ -33,6 +52,7 @@ return;
 const {error}=await supabase
 .from("leaves")
 .insert({
+company_id: companyId,
 
 employee_id:parseInt(form.employee_id),
 
@@ -43,6 +63,8 @@ leave_type:form.leave_type,
 start_date:form.start_date,
 
 end_date:form.end_date,
+
+
 
 reason:form.reason,
 
